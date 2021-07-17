@@ -1,7 +1,5 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using DSharpPlus;
-using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,7 +15,7 @@ namespace Chihiro.Implementation
         /// <summary>
         /// Gets the guild where the command was executed, null if context is a DM.
         /// </summary>
-        public readonly DiscordGuild? Guild;
+        public readonly DiscordGuild Guild;
 
         /// <summary>
         /// Gets the channel where the command was executed.
@@ -32,7 +30,7 @@ namespace Chihiro.Implementation
         /// <summary>
         /// Gets the current logged-in user.
         /// </summary>
-        public DiscordMember? CurrentMember => Guild?.CurrentMember;
+        public DiscordMember CurrentMember => Guild.CurrentMember;
 
         /// <summary>
         /// Gets the user's message that executed the command.

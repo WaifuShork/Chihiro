@@ -1,17 +1,13 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Reflection;
-using System.Threading;
+using System.Runtime.Loader;
 using System.Threading.Tasks;
 using Chihiro.Attributes;
 using Chihiro.Implementation;
 using DSharpPlus;
-using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Qmmands;
-using Serilog;
 
 namespace Chihiro.Services
 {
@@ -22,15 +18,20 @@ namespace Chihiro.Services
         
         public CommandHandlerService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            _commandService = serviceProvider.GetRequiredService<CommandService>();
-
-            ChihiroHostService.Client.MessageCreated += OnMessageCreated;
+            RegisterEvents();
             
             var assembly = Assembly.GetAssembly(typeof(ChihiroHostService));
+            
+            _commandService = serviceProvider.GetRequiredService<CommandService>();
             _commandService.AddModules(assembly);
         }
 
-        private async Task OnMessageCreated(DiscordClient sender, MessageCreateEventArgs args)
+        private void RegisterEvents()
+        {
+            ChihiroHostService.Client.MessageCreated += async (sender, args) => await OnMessageCreatedAsync(sender, args);
+        }
+
+        private async Task OnMessageCreatedAsync(BaseDiscordClient sender, MessageCreateEventArgs args)
         {
             if (args.Message.MessageType != MessageType.Default)
             {
@@ -58,16 +59,10 @@ namespace Chihiro.Services
 
             var prefix = Configuration.Prefix;
             
-            if (!CommandUtilities.HasPrefix(args.Message.Content, prefix, StringComparison.InvariantCultureIgnoreCase, out var output))
+            if (!CommandUtilities.HasPrefix(args.Message.Content, prefix, StringComparison.InvariantCultureIgnoreCase, out var output) && 
+                !args.Message.HasMentionPrefix(client.CurrentUser, out output))
             {
                 if (client.CurrentUser == null)
-                {
-                    return;
-                }
-
-                if (!CommandUtilities.HasPrefix(args.Message.Content, client.CurrentUser.Username,
-                        StringComparison.InvariantCultureIgnoreCase, out output)
-                    && !args.Message.HasMentionPrefix(client.CurrentUser, out output))
                 {
                     return;
                 }
@@ -76,6 +71,12 @@ namespace Chihiro.Services
             var context = new ChihiroCommandContext(ChihiroHostService, args.Message, prefix);
             var result = await _commandService.ExecuteAsync(output, context);
 
+            if (result == null)
+            {
+                await context.Channel.SendMessageAsync("Fatal error... this is embarrassing...");
+                return;
+            }
+            
             if (result.IsSuccessful)
             {
                 return;
@@ -83,7 +84,5 @@ namespace Chihiro.Services
 
             await context.Channel.SendMessageAsync(result.ToString());
         }
-
-        
     }
 }

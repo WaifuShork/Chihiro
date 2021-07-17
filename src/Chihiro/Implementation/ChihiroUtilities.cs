@@ -19,7 +19,7 @@ namespace Chihiro.Implementation
                         : contentSpan.Slice(2, closingBracketIndex - 2);
                     if (ulong.TryParse(idSpan, out var id) && id == currentUser.Id)
                     {
-                        output = new string(contentSpan.Slice(closingBracketIndex + 1));
+                        output = new string(contentSpan[(closingBracketIndex + 1)..]);
                         return true;
                     }
                 }
@@ -28,13 +28,5 @@ namespace Chihiro.Implementation
             output = string.Empty;
             return false;
         }
-
-        public static string ToFirstUpper(this string input) =>
-            input switch
-            {
-                null => throw new ArgumentNullException(nameof(input)),
-                "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
-                _ => input.First().ToString().ToUpper() + input.Substring(1)
-            };
     }
 }

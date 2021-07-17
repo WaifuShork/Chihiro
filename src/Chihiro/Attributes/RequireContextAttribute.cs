@@ -6,15 +6,11 @@ using DSharpPlus.CommandsNext.Attributes;
 
 namespace Chihiro.Attributes
 {
-    /// <summary>
-    /// This attribute ensures that the context is either Guild or DM.
-    /// Could be used for instance for the prefix command, as the command should only be executed in a guild.
-    /// </summary>
-    public class ContextAttribute : CheckBaseAttribute
+    public class RequireContextAttribute : CheckBaseAttribute
     {
         private readonly ContextType _contextType;
 
-        public ContextAttribute(ContextType contextType)
+        public RequireContextAttribute(ContextType contextType)
         {
             _contextType = contextType;
         }

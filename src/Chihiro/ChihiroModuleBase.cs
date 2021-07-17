@@ -7,16 +7,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Serilog;
 
-namespace Chihiro.NET.Modules
+namespace Chihiro.Modules
 {
-    public abstract class ChihiroModule : ModuleBase<ChihiroCommandContext>, IAsyncDisposable
+    public abstract class ChihiroModuleBase<T> : ModuleBase<T>, IAsyncDisposable where T : ChihiroCommandContext
     {
         protected ChihiroHostService ChihiroHostService { get; }
         protected Configuration Configuration { get; }
         
         private readonly IServiceScope _scope;
 
-        protected ChihiroModule(IServiceProvider serviceProvider)
+        protected ChihiroModuleBase(IServiceProvider serviceProvider)
         {
             ChihiroHostService = serviceProvider.GetRequiredService<ChihiroHostService>();
             Configuration = serviceProvider.GetRequiredService<Configuration>();
@@ -36,21 +36,6 @@ namespace Chihiro.NET.Modules
             }
             
             Log.Debug($"Module: {Context.Command.Module.Name}, Command: {Context.Command.Name}, scope disposed");
-        }
-        
-        protected async Task<DiscordMessage> ReplyAsync(string text)
-        {
-            return await Context.Channel.SendMessageAsync(text);
-        }
-
-        protected async Task<DiscordMessage> ReplyAsync(DiscordEmbed embed)
-        {
-            return await Context.Channel.SendMessageAsync(embed: embed);
-        }
-
-        protected async Task<DiscordMessage> ReplyAsync(string text, DiscordEmbed embed)
-        {
-            return await Context.Channel.SendMessageAsync(text, false, embed);
         }
 
         protected DiscordEmbedBuilder CreateEmbed(string title)
